@@ -1,0 +1,50 @@
+def main():
+    bird = Bird.Bird(230,250)
+    base = Base(400)
+    # pipes = [Pipe(400)]
+    currentRound = [Pipe(400),Pipe(650)]
+    window = pygame.display.set_mode((WindowWidth,WindowHeight))
+    gameClock = pygame.time.Clock()
+
+    gameScore = 0
+
+    run = True
+    while run:
+        gameClock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+        bird.move()
+        addPipe = False
+        pipeBin = [] #a bin to throw away surpassed pipes
+        for pipe in pipes:
+
+            #check if the bird collides with the pipe, end game if True
+            if pipe.collide(bird):
+                print("Pipe collision")
+
+            if pipe.posX + pipe.TopPipe.get_width() < 0: #is pipe off screen?
+                pipeBin.append(pipe)
+
+            if not pipe.pipePassed and pipe.posX < bird.posX:
+                pipe.pipePassed = True
+                addPipe = True
+
+            pipe.move()
+
+        #round complete, generate new round
+        if addPipe:
+            gameScore = gameScore + 1
+            # pipes.append(Pipe(400)) #place next pipe on screem
+        
+        pipeBin[:] = []
+
+        #base collision
+        if bird.posY + bird.currentSprite.get_height() >= 730:
+            pass
+
+        base.move()
+        drawWindow(window,bird,pipes,base,gameScore)
+    pygame.quit()
+    quit()

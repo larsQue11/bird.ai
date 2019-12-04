@@ -18,44 +18,42 @@ class Bird:
     AnimationTime = 5
 
     def __init__(self):
-        self.posX = 150
-        self.posY = 250
-        self.angleOfPitch = 0
-        self.time = 0
+        self.positionX = 150
+        self.positionY = 250
+        # self.angleOfPitch = 0
+        # self.time = 0
         self.velocityY = 0
         self.currentSpriteCount = 0
         self.currentSprite = self.BirdCruisingSprite
         self.birdBrain = nn.NeuralNetwork(3,3,1)
         self.fitness = 0
         self.died = False
-        self.move()
 
-    def jump(self,inputVector):
-        
-        prediction = self.birdBrain.predict(inputVector)
-        # print(prediction[0][0])
-        if prediction[0][0] > 0.5:
-            print("JUMP!")
-            return True
-        else:
-            print("no jump")
-            print(prediction[0][0])
-            return False
-
-
-    # def jump(self):
-
-    #     self.velocity = -2.5
-    #     self.time = 0
-    #     # self.posY
+    def jump(self):
+        self.velocityY = self.velocityY - 8
+        # prediction = self.birdBrain.predict(inputVector)
+        # # print(prediction[0][0])
+        # if prediction[0][0] > 0.5:
+        #     print("JUMP!")
+        #     return True
+        # else:
+        #     print("no jump")
+        #     print(prediction[0][0])
+        #     return False
 
 
-    def move(self):
+
+    def update(self):
         #horizontal velocity = 5
-        self.time = self.time + 1
-        gravity = 2.5
-        deltaY = 0.5 * gravity #ignore the time variable because calculating per unit time
-        self.posY = self.posY + deltaY
+        # self.time = self.time + 1
+        # gravity = 2.5
+        # deltaY = 0.5 * gravity #ignore the time variable because calculating per unit time
+        # self.posY = self.posY + deltaY
+        gravity = 1
+        self.positionY = self.positionY + self.velocityY
+        if self.positionY < 0:
+            self.positionY = 0
+        self.velocityY = self.velocityY + gravity
     '''
     def move(self,inputVector):
         #horizontal velocity = 5
@@ -94,26 +92,26 @@ class Bird:
 
     def draw(self,window):
 
-        self.currentSpriteCount = self.currentSpriteCount + 1
-        if self.currentSpriteCount < self.AnimationTime:
-            self.currentSprite = self.BirdWingUpSprite
-        elif self.currentSpriteCount < self.AnimationTime*2:
-            self.currentSprite = self.BirdCruisingSprite
-        elif self.currentSpriteCount < self.AnimationTime*3:
-            self.currentSprite = self.BirdWingDownSprite
-        elif self.currentSpriteCount < self.AnimationTime*4:
-            self.currentSprite = self.BirdCruisingSprite
-        elif self.currentSpriteCount < self.AnimationTime*4 + 1:
-            self.currentSprite = self.BirdWingUpSprite
-            self.currentSpriteCount = 0
+        # self.currentSpriteCount = self.currentSpriteCount + 1
+        # if self.currentSpriteCount < self.AnimationTime:
+        #     self.currentSprite = self.BirdWingUpSprite
+        # elif self.currentSpriteCount < self.AnimationTime*2:
+        #     self.currentSprite = self.BirdCruisingSprite
+        # elif self.currentSpriteCount < self.AnimationTime*3:
+        #     self.currentSprite = self.BirdWingDownSprite
+        # elif self.currentSpriteCount < self.AnimationTime*4:
+        #     self.currentSprite = self.BirdCruisingSprite
+        # elif self.currentSpriteCount < self.AnimationTime*4 + 1:
+        #     self.currentSprite = self.BirdWingUpSprite
+        #     self.currentSpriteCount = 0
 
-        if self.angleOfPitch <= -80:
-            self.currentSprite = self.BirdCruisingSprite
-            self.currentSpriteCount = self.AnimationTime * 2
+        # if self.angleOfPitch <= -80:
+        #     self.currentSprite = self.BirdCruisingSprite
+        #     self.currentSpriteCount = self.AnimationTime * 2
 
-        rotatedImage = pygame.transform.rotate(self.currentSprite,self.angleOfPitch)
-        rotationRectangle = rotatedImage.get_rect(center=self.currentSprite.get_rect(topleft = (self.posX,self.posY)).center)
-        window.blit(rotatedImage,rotationRectangle.topleft)
+        # rotatedImage = pygame.transform.rotate(self.currentSprite,self.angleOfPitch)
+        # rotationRectangle = rotatedImage.get_rect(center=self.currentSprite.get_rect(topleft = (self.posX,self.posY)).center)
+        window.blit(self.currentSprite,(self.positionX,self.positionY))
 
 
     def getMask(self):

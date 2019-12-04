@@ -1,5 +1,7 @@
 import numpy as np
 from math import exp
+from math import pow
+import random
 
 #create framework for a three layer Neural Network
 class NeuralNetwork():
@@ -73,45 +75,7 @@ class NeuralNetwork():
             # errorVectorOutput = 0.5 * errorVectorOutput * errorVectorOutput
             
 
-            #Backpropagation starts here
-            #calculate the new weights for the edges between the Hidden and Output layers
-            gradientVectorHiddenToOutput = self.__calculateGradient(learningRate,errorVectorOutput,hiddenVectorOut,outputVectorOut)
-            # self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,gradientVectorHiddenToOutput)
-
-            #calculate the hidden layer errors as the transpose of the weight matrix between
-            #Hidden and Output layers multiplied by the output error vector
-            errorVectorHidden = np.dot(np.transpose(self.weightsHiddenToOutput),errorVectorOutput)
-            deltaMatrix = np.dot(gradientVectorHiddenToOutput,np.transpose(hiddenVectorOut))
-            self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,deltaMatrix)
-            self.hiddenLayerBias = np.add(self.hiddenLayerBias,gradientVectorHiddenToOutput)
-
-
-            # self.inputLayerBias = self.inputLayerBias + errorVectorHidden[len(errorVectorHidden)-1]
-            # errorVectorHidden = errorVectorHidden[:len(errorVectorHidden)-1] #remove the bias element
-            # hiddenVector = hiddenVector[:len(hiddenVector)-1] #remove the bias element
-            gradientVectorInputToHidden = self.__calculateGradient(learningRate,errorVectorHidden,inputVector,hiddenVectorOut)
-            errorVectorInput = np.dot(np.transpose(self.weightsInputToHidden),errorVectorHidden)
-            # self.inputLayerBias = self.inputLayerBias + errorVectorInput[len(errorVectorInput)-1]
-            deltaMatrix = np.dot(gradientVectorInputToHidden,np.transpose(inputVector))
-            self.weightsInputToHidden = np.add(self.weightsInputToHidden,deltaMatrix)
-            self.inputLayerBias = np.add(self.inputLayerBias,gradientVectorInputToHidden)
-
-            # deltaMatrix = np.dot(gradientVectorHiddenToOutput,np.transpose(hiddenVector))
-            # self.weightsHiddenToOutput = np.add(self.weightsHiddenToOutput,deltaMatrix)
-            # self.hiddenLayerBias = np.add(self.hiddenLayerBias,gradientVectorHiddenToOutput)
-
-
-    # dW = alpha * Error * d(sigmoid(x)) * Input
-    def __calculateGradient(self,learningRate,errorVector,sourceVector,destinationVector):
-
-        # gradientVector = self.__dSigmoid(destinationVector)
-        gradientVector = np.multiply(destinationVector,1-destinationVector)
-        gradientVector = learningRate * errorVector * gradientVector
-        # gradientVector = np.dot(gradientVector,np.transpose(sourceVector))
-
-        return gradientVector
-
-
+           
     def __Sigmoid(self,x):
 
         return 1 / (1 + exp(-x))
@@ -152,3 +116,52 @@ class NeuralNetwork():
         outputVector = np.reshape(outputVector,(self.numOutputs,1))
 
         return outputVector
+
+    # def getGenotype(self,mutationRate):
+
+    #     # self.mutateWeights(mutationRate)
+    #     rand = random.randint(1,100)
+    #     if rand in range(1,int((mutationRate*100)+1)):
+    #         dims = np.shape(self.inputLayerBias)
+    #         inputLayerBias = np.copy(np.ndarray.flatten(self.inputLayerBias))
+    #         # inputLayerBias = [pow(i,random.randint(1,8))%1 for i in inputLayerBias]
+    #         # inputLayerBias = np.reshape(inputLayerBias,dims)
+    #         print(inputLayerBias)
+    #         print(self.inputLayerBias)
+
+    #         dims = np.shape(self.weightsInputToHidden)
+    #         weightsInputToHidden = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.weightsInputToHidden)]
+    #         weightsInputToHidden = np.reshape(weightsInputToHidden,dims)
+
+    #         dims = np.shape(self.hiddenLayerBias)
+    #         hiddenLayerBias = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.hiddenLayerBias)]
+    #         hiddenLayerBias = np.reshape(hiddenLayerBias,dims)
+
+    #         dims = np.shape(self.weightsHiddenToOutput)
+    #         weightsHiddenToOutput = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.weightsHiddenToOutput)]
+    #         weightsHiddenToOutput = np.reshape(weightsHiddenToOutput,dims)
+
+    #     return inputLayerBias, weightsInputToHidden, hiddenLayerBias, weightsHiddenToOutput
+
+    def getGenotype(self):
+        return np.copy(self.inputLayerBias), np.copy(self.weightsInputToHidden), np.copy(self.hiddenLayerBias), np.copy(self.weightsHiddenToOutput)
+
+    def mutateWeights(self,mutationRate):
+
+        rand = random.randint(1,100)
+        if rand in range(1,int((mutationRate*100)+1)):
+            dims = np.shape(self.inputLayerBias)
+            inputLayerBias = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.inputLayerBias)]
+            self.inputLayerBias = np.reshape(inputLayerBias,dims)
+
+            dims = np.shape(self.weightsInputToHidden)
+            weightsInputToHidden = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.weightsInputToHidden)]
+            self.weightsInputToHidden = np.reshape(weightsInputToHidden,dims)
+
+            dims = np.shape(self.hiddenLayerBias)
+            hiddenLayerBias = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.hiddenLayerBias)]
+            self.hiddenLayerBias = np.reshape(hiddenLayerBias,dims)
+
+            dims = np.shape(self.weightsHiddenToOutput)
+            weightsHiddenToOutput = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.weightsHiddenToOutput)]
+            self.weightsHiddenToOutput = np.reshape(weightsHiddenToOutput,dims)
