@@ -25,21 +25,27 @@ class Bird:
         self.velocityY = 0
         self.currentSpriteCount = 0
         self.currentSprite = self.BirdCruisingSprite
-        self.birdBrain = nn.NeuralNetwork(3,3,1)
+        self.birdBrain = nn.NeuralNetwork(4,2,1)
         self.fitness = 0
         self.died = False
 
-    def jump(self):
-        self.velocityY = self.velocityY - 8
-        # prediction = self.birdBrain.predict(inputVector)
-        # # print(prediction[0][0])
-        # if prediction[0][0] > 0.5:
-        #     print("JUMP!")
-        #     return True
-        # else:
-        #     print("no jump")
-        #     print(prediction[0][0])
-        #     return False
+    def jump(self,inputVector):
+        prediction = self.birdBrain.predict(inputVector)
+        # print(prediction[0][0])
+        if prediction[0][0] > 0.8:
+            # print("JUMP!")
+            self.velocityY = self.velocityY - 4
+            if self.velocityY < -16:
+                self.velocityY = -16
+            elif self.velocityY > 16:
+                self.velocityY = 16
+        else:
+            # print("no jump")
+            # print(prediction[0][0])
+            pass
+        
+    def jumpKey(self):
+        self.velocityY = self.velocityY - 4
 
 
 
@@ -49,7 +55,7 @@ class Bird:
         # gravity = 2.5
         # deltaY = 0.5 * gravity #ignore the time variable because calculating per unit time
         # self.posY = self.posY + deltaY
-        gravity = 1
+        gravity = 0.1
         self.positionY = self.positionY + self.velocityY
         if self.positionY < 0:
             self.positionY = 0

@@ -25,7 +25,7 @@ pygame.font.init()
 Font = pygame.font.Font("./LuckiestGuy.ttf", 30)
 
 
-class Pipe:
+class Pipe():
     PipeSprite = pygame.image.load('./images/pipe.png')
     Gap = 100
     Velocity = 5
@@ -146,7 +146,7 @@ def generation():
     window = pygame.display.set_mode((WindowWidth,WindowHeight))
     gameClock = pygame.time.Clock()
 
-    populationSize = 100 #number of birds to start with
+    populationSize = 10000 #number of birds to start with
     numberOfDeadBirds = 0
     numberOfParents = 2
     deadBirdThreshold = populationSize - numberOfParents

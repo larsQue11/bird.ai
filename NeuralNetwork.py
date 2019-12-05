@@ -10,8 +10,10 @@ class NeuralNetwork():
         self.numInputs = numInputs
         self.numHiddenNeurons = numHiddenNeurons
         self.numOutputs = numOutputs
-        self.inputLayerBias = np.reshape([np.random.random() for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
-        self.hiddenLayerBias = np.reshape([np.random.random() for i in  range(self.numOutputs)],(self.numOutputs,1))
+        # self.inputLayerBias = np.reshape([np.random.random() for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
+        # self.hiddenLayerBias = np.reshape([np.random.random() for i in  range(self.numOutputs)],(self.numOutputs,1))
+        self.inputLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
+        self.hiddenLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numOutputs)],(self.numOutputs,1))
         self.weightsInputToHidden = self.__initializeWeights(numInputs,numHiddenNeurons) #* np.sqrt(2/1)
         self.weightsHiddenToOutput = self.__initializeWeights(numHiddenNeurons,numOutputs) #* np.sqrt(2/1)
         # self.weightsInputToHidden = np.ones((2,3))
@@ -25,7 +27,8 @@ class NeuralNetwork():
 
         for row in range(rows):
 
-            currentRow = [np.random.random() for col in range(cols)]
+            # currentRow = [np.random.random() for col in range(cols)]
+            currentRow = [random.randint(1,99)/100 for col in range(cols)]
             weights.append(currentRow)
 
         #return a matrix with rows containing the input to each destination layer     
@@ -148,6 +151,7 @@ class NeuralNetwork():
 
     def mutateWeights(self,mutationRate):
 
+        '''
         rand = random.randint(1,100)
         if rand in range(1,int((mutationRate*100)+1)):
             dims = np.shape(self.inputLayerBias)
@@ -165,3 +169,59 @@ class NeuralNetwork():
             dims = np.shape(self.weightsHiddenToOutput)
             weightsHiddenToOutput = [pow(i,random.randint(1,8))%1 for i in np.ndarray.flatten(self.weightsHiddenToOutput)]
             self.weightsHiddenToOutput = np.reshape(weightsHiddenToOutput,dims)
+        '''
+
+        
+        dims = np.shape(self.inputLayerBias)
+        inputLayerBias = np.ndarray.flatten(self.inputLayerBias)
+        for weight in inputLayerBias:
+            rand = random.randint(1,100)
+            if rand in range(1,int((mutationRate*100)+1)):
+                weight = self.decMutation(weight)
+        self.inputLayerBias = np.reshape(inputLayerBias,dims)
+
+        dims = np.shape(self.weightsInputToHidden)
+        weightsInputToHidden = np.ndarray.flatten(self.weightsInputToHidden)
+        for weight in weightsInputToHidden:
+            rand = random.randint(1,100)
+            if rand in range(1,int((mutationRate*100)+1)):
+                weight = self.decMutation(weight)
+        self.weightsInputToHidden = np.reshape(weightsInputToHidden,dims)
+
+        dims = np.shape(self.hiddenLayerBias)
+        hiddenLayerBias = np.ndarray.flatten(self.hiddenLayerBias)
+        for weight in hiddenLayerBias:
+            rand = random.randint(1,100)
+            if rand in range(1,int((mutationRate*100)+1)):
+                weight = self.decMutation(weight)
+        self.hiddenLayerBias = np.reshape(hiddenLayerBias,dims)
+
+        dims = np.shape(self.weightsHiddenToOutput)
+        weightsHiddenToOutput = np.ndarray.flatten(self.weightsHiddenToOutput)
+        for weight in weightsHiddenToOutput:
+            rand = random.randint(1,100)
+            if rand in range(1,int((mutationRate*100)+1)):
+                weight = self.decMutation(weight)
+        self.weightsHiddenToOutput = np.reshape(weightsHiddenToOutput,dims)
+            
+
+    def decMutation(self,value):
+
+        intVal = int(value*100) + random.randint(-1,1)
+        
+        return intVal % 100
+
+    def bitMutation(self,value):
+
+        binVal = bin(int(value*100))
+        if len(binVal) != 9:
+            addZeros = 9 - len(binVal)
+            binVal = binVal[:2] + ('0' * addZeros) + binVal[2:]
+
+        indexOfMutation = random.randint(2,8)
+        if binVal[indexOfMutation] == '1':
+            binVal = binVal[:indexOfMutation] + '0' + binVal[indexOfMutation:]
+        else:
+            binVal = binVal[:indexOfMutation] + '1' + binVal[indexOfMutation:]
+
+        return int(binVal,2)/100
