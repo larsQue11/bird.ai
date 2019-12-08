@@ -12,10 +12,8 @@ class NeuralNetwork():
         self.numOutputs = numOutputs
         # self.inputLayerBias = np.reshape([np.random.random() for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
         # self.hiddenLayerBias = np.reshape([np.random.random() for i in  range(self.numOutputs)],(self.numOutputs,1))
-        # self.inputLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
-        # self.hiddenLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numOutputs)],(self.numOutputs,1))
-        self.inputLayerBias = np.reshape([0.5 for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
-        self.hiddenLayerBias = np.reshape([0.5 for i in  range(self.numOutputs)],(self.numOutputs,1))
+        self.inputLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numHiddenNeurons)],(self.numHiddenNeurons,1))
+        self.hiddenLayerBias = np.reshape([random.randint(1,99)/100 for i in  range(self.numOutputs)],(self.numOutputs,1))
         self.weightsInputToHidden = self.__initializeWeights(numInputs,numHiddenNeurons) #* np.sqrt(2/1)
         self.weightsHiddenToOutput = self.__initializeWeights(numHiddenNeurons,numOutputs) #* np.sqrt(2/1)
         # self.weightsInputToHidden = np.ones((2,3))

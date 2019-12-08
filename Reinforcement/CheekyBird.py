@@ -1,10 +1,9 @@
 import pygame
 import time
 import random
-import NeuralNetwork as nn
-import NewBird as Bird
-import GeneticAlgorithm as ga
+import Bird as Bird
 import numpy as np
+import QLearning as Q
 
 '''
 TODO:
@@ -29,13 +28,13 @@ Column:
 
 WindowWidth = 864
 WindowHeight = 512
-BackgroundImage = pygame.image.load('./images/background.png')
+BackgroundImage = pygame.image.load('../images/background.png')
 pygame.font.init()
-Font = pygame.font.Font("./LuckiestGuy.ttf", 26)
+Font = pygame.font.Font("../LuckiestGuy.ttf", 26)
 
 
 class Pipe:
-    PipeSprite = pygame.image.load('./images/pipe.png')
+    PipeSprite = pygame.image.load('../images/pipe.png')
     Gap = 150
     Velocity = 5
 
@@ -86,7 +85,7 @@ class Pipe:
 
 
 class Base():
-    GroundSprite = pygame.image.load('./images/ground.png')
+    GroundSprite = pygame.image.load('../images/ground.png')
     Velocity = 5
     Width = GroundSprite.get_width()
 
@@ -128,7 +127,7 @@ class Base():
             return False
 
 
-def drawWindow(window,birds,pipes,base,text):
+def drawWindow(window,bird,pipes,base,text):
     window.blit(BackgroundImage,(0,0))
 
     for pipe in pipes:
@@ -139,9 +138,9 @@ def drawWindow(window,birds,pipes,base,text):
     window.blit(text,(10,10))
     base.draw(window)
     
-    # bird.draw(window)
-    for bird in birds:
-        bird.draw(window)
+    bird.draw(window)
+    # for bird in birds:
+    #     bird.draw(window)
     pygame.display.update()
 
 
@@ -151,14 +150,14 @@ def generatePipe(distance):
     return Pipe(distance)
 
 
-def birdEvolution():
+def birdLearning():
     
     gameClock = pygame.time.Clock()
     stillLearning = True
-    currentGeneration = 0
+    currentIteration = 0
     highScore = 0
-    populationSize = 200
-    birds = ga.GenerateNewPopulation(200).nextGeneration
+    brain = Q.Learning()
+
     while stillLearning:
 
         #Following represents a single generation of evolution
@@ -166,126 +165,98 @@ def birdEvolution():
         base = Base()
         gameScore = 0
         pipesPassed = 0
-        gameObjects = [Pipe((600 * i)) for i in range(1,20)]
+        gameObjects = [Pipe((400 * i)) for i in range(1,20)]
         nextObject = gameObjects[pipesPassed]
-        generation = True
+        iterate = True
         
-        # bird = Bird.Bird()
+        epsilon = 1
+        bird = Bird.Bird()
         
-        deadBirds = []
-        while generation:
+        updateTable = False
+        reward = 0
+        while iterate:
             
             #time control
             # gameClock.tick(30)
             # pygame.time.delay(30)
-            drawWindow(window,birds,gameObjects,base,[currentGeneration,highScore,gameScore])
+            
             for event in pygame.event.get():
                 # gameClock.tick(30)
                 if event.type == pygame.KEYDOWN :
                     if event.key == pygame.K_ESCAPE :
                         run = False
                     elif event.key == pygame.K_SPACE :
-                        for bird in birds:
-                            bird.jumpKey()
+                        bird.jump()
+                        # for bird in birds:
+                        #     bird.jumpKey()
                 elif event.type == pygame.QUIT:
+                    brain.saveState()
                     run = False
                     pygame.quit()
                     quit()
-
+            
+            #game stuff
+            drawWindow(window,bird,gameObjects,base,[currentIteration,highScore,gameScore])
             for obj in gameObjects:
                 obj.move()
 
             base.move()
-            for bird in birds:
-                bird.fitness = bird.fitness + 0.1
-                currentVerticalPosition = (bird.positionY - 400) / 400
-                currentVelocity = bird.velocityY / 16
-                distanceToNextPole = (nextObject.posX - bird.positionX) / (WindowWidth)
-                centroidOfUpcomingGap = (nextObject.centerOfGap - bird.positionY)/ 400
-                inputVector = [currentVerticalPosition,currentVelocity,distanceToNextPole,centroidOfUpcomingGap]
-                # bird.jump(inputVector)
-                # bird.update()
 
-                if nextObject.collide(bird):
-                    print("Pipe collision")
-                    bird.died = True
-                    bird.fitness = bird.fitness + (gameScore*10)
-                                
+            if nextObject.collide(bird):
+                print("Pipe collision")
+                bird.died = True
+                iterate = False
+                if bird.positionY == 0:
+                    reward = -1000
+                else:
+                    reward = -10
 
-                # check for base collision, bird dies if true
-                if bird.positionY >= 400:
-                    print("Base collision")
-                    bird.died = True
-                    bird.fitness = bird.fitness + (gameScore*10)
+
+            # check for base collision, bird dies if true
+            elif bird.positionY >= 400:
+                print("Base collision")
+                bird.died = True
+                iterate = False
+                reward = -10
+
+
+            #get the current state and find the suggested action to take
+            deltaX = int (nextObject.posX - bird.positionX)
+            deltaY = int (nextObject.centerOfGap - bird.positionY) + 250
+            
+            if updateTable:
+                brain.updateFromExploration(deltaX,deltaY,reward)
+                updateTable = False
+            
+            if random.random() < epsilon:
+                action = brain.explore(deltaX,deltaY)
+                updateTable = True
+            else:
+                action = brain.exploit(deltaX,deltaY)
+            
+            if action == 1:
+                bird.jump()
+
+            bird.update()
+
                 
-            if nextObject.posX < birds[0].positionX:
+            if nextObject.posX < bird.positionX:
                 gameScore = gameScore + 1
                 pipesPassed = pipesPassed + 1
                 nextObject = gameObjects[pipesPassed]
                 gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
+                reward = 10
+            
 
-            deadBirds = deadBirds + [bird for bird in birds if bird.died]
-            birds = [bird for bird in birds if not bird.died]
-
-            if len(deadBirds) == populationSize:
-                generation = False
-                
-                '''
-                for bird in deadBirds[:5]:
-                    inputLayerBias, weightsInputToHidden, hiddenLayerBias, weightsHiddenToOutput = bird.birdBrain.getGenotype()
-                    goodBird = Bird.Bird()
-                    goodBird.birdBrain.inputLayerBias = inputLayerBias[:]
-                    goodBird.birdBrain.weightsInputToHidden = weightsInputToHidden[:]
-                    goodBird.birdBrain.hiddenLayerBias = hiddenLayerBias[:]
-                    goodBird.birdBrain.weightsHiddenToOutput = weightsHiddenToOutput[:]
-                    birds.append(goodBird)
-                    
-                '''
-                # birds = birds + birds[:]
-                # for bird in birds[5:]:
-                #     bird.birdBrain.mutateWeights(0.8)
-                # birds = birds + [Bird.Bird() for i in range(populationSize-len(birds))]
-
-        #End current generation, exit loop and return to outer loop
-
-        #Do evolutionary tasks here before moving on to next generation
-        '''
-        deadBirds.sort(key=lambda x: x.fitness, reverse=True) #sort birds by best fitness           
-
-        #if all birds are bad just make a new set from scratch
-        if deadBirds[0].fitness < 2:
-            birds = [Bird.Bird() for bird in range(populationSize)]
-        else:
-            birds = []
-            for i in range(populationSize):
-                inputLayerBias, weightsInputToHidden, hiddenLayerBias, weightsHiddenToOutput = deadBirds[0].birdBrain.getGenotype()
-                goodBird = Bird.Bird()
-                goodBird.birdBrain.inputLayerBias = inputLayerBias[:]
-                goodBird.birdBrain.weightsInputToHidden = weightsInputToHidden[:]
-                goodBird.birdBrain.hiddenLayerBias = hiddenLayerBias[:]
-                goodBird.birdBrain.weightsHiddenToOutput = weightsHiddenToOutput[:]
-                if len(birds) == 0:
-                    birds.append(goodBird)
-                else:
-                    if deadBirds[0].fitness < 9:
-                        goodBird.birdBrain.mutateWeights(0.99)
-                        birds.append(goodBird)
-                    elif gameScore > 1 and gameScore < 7:
-                        goodBird.birdBrain.mutateWeights(0.50)
-                        birds.append(goodBird)
-                    elif gameScore > 7:
-                        goodBird.birdBrain.mutateWeights(0.10)
-                        birds.append(goodBird)     
-        '''           
-        
-        currentGeneration = currentGeneration + 1
+        #End current iteration, exit loop and return to outer loop
+     
+        currentIteration = currentIteration + 1
         if gameScore > highScore:
             highScore = gameScore
-        birds = ga.GenerateNewPopulation(populationSize).nextGeneration
     #TODO: assess fitness, pick best candidates, crossover+mutate, generate new generation
 
 
 
 if __name__ == "__main__":
 
-    birdEvolution()
+    birdLearning()

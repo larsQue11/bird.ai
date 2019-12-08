@@ -13,22 +13,22 @@ class GenerateNewPopulation():
             self.nextGeneration = [Bird.Bird() for bird in range(populationSize)]
 
         else:
-            self.generationFitness = self.__normalizeFitness(oldPopulation)
+            self.__normalizeFitness(oldPopulation)
             #select new birds based on fitness
             self.nextGeneration = [self.__naturalSelection(oldPopulation) for i in range(populationSize)]
             
             for bird in self.nextGeneration:
-                bird.birdBrain.inputLayerBias = self.__mutate(bird.birdBrain.inputLayerBias,bird.fitness)
-                bird.birdBrain.weightsInputToHidden = self.__mutate(bird.birdBrain.weightsInputToHidden,bird.fitness)
-                bird.birdBrain.hiddenLayerBias = self.__mutate(bird.birdBrain.hiddenLayerBias,bird.fitness)
-                bird.birdBrain.weightsHiddenToOutput = self.__mutate(bird.birdBrain.weightsHiddenToOutput,bird.fitness)
+                bird.birdBrain.inputLayerBias = self.__mutate(bird.birdBrain.inputLayerBias)
+                bird.birdBrain.weightsInputToHidden = self.__mutate(bird.birdBrain.weightsInputToHidden)
+                bird.birdBrain.hiddenLayerBias = self.__mutate(bird.birdBrain.hiddenLayerBias)
+                bird.birdBrain.weightsHiddenToOutput = self.__mutate(bird.birdBrain.weightsHiddenToOutput)
 
 
     def __naturalSelection(self,oldPopulation):
 
         selectionProbability = random.random()
         for bird in oldPopulation:
-            if bird.positionY > 1 and bird.positionY < 399:
+            if bird.positionY != 0:
                 selectionProbability = selectionProbability - bird.fitness
                 if selectionProbability < 0:
                     inputLayerBias, weightsInputToHidden, hiddenLayerBias, weightsHiddenToOutput = bird.birdBrain.getGenotype()
@@ -40,14 +40,11 @@ class GenerateNewPopulation():
                     return goodBird
 
 
-    def __mutate(self,matrix,fitness):
+    def __mutate(self,matrix):
 
         dims = np.shape(matrix)
         matrix = np.ndarray.flatten(matrix)
-        if fitness > self.generationFitness:
-            mutationRate = 0.1
-        else:
-            mutationRate = 0.6
+        mutationRate = 0.2
         for value in matrix:
             if random.random() < mutationRate:
                 value = (value + random.gauss(0.5,0.25)*5) % 1
@@ -67,4 +64,3 @@ class GenerateNewPopulation():
         for bird in oldPopulation:
             bird.fitness = bird.fitness / populationFitness
         
-        return populationFitness

@@ -166,7 +166,7 @@ def birdEvolution():
         base = Base()
         gameScore = 0
         pipesPassed = 0
-        gameObjects = [Pipe((400 * i)) for i in range(1,20)]
+        gameObjects = [Pipe((600 * i)) for i in range(1,20)]
         nextObject = gameObjects[pipesPassed]
         generation = True
         
@@ -198,10 +198,10 @@ def birdEvolution():
             base.move()
             for bird in birds:
                 bird.fitness = bird.fitness + 0.1
-                currentVerticalPosition = (400 - bird.positionY) / 400
+                currentVerticalPosition = (bird.positionY - 400) / 400
                 currentVelocity = bird.velocityY / 16
                 distanceToNextPole = (nextObject.posX - bird.positionX) / (WindowWidth)
-                centroidOfUpcomingGap = (bird.positionY - nextObject.centerOfGap)/ 400                
+                centroidOfUpcomingGap = (nextObject.centerOfGap - bird.positionY)/ 400
                 inputVector = [currentVerticalPosition,currentVelocity,distanceToNextPole,centroidOfUpcomingGap]
                 bird.jump(inputVector)
                 bird.update()
@@ -223,9 +223,6 @@ def birdEvolution():
                 pipesPassed = pipesPassed + 1
                 nextObject = gameObjects[pipesPassed]
                 gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
-                for bird in birds:
-                    if not bird.died:
-                        bird.fitness = bird.fitness + 10
 
             deadBirds = deadBirds + [bird for bird in birds if bird.died]
             birds = [bird for bird in birds if not bird.died]
