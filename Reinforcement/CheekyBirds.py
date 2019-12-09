@@ -120,7 +120,7 @@ class Base():
             return False
 
 
-def drawWindow(window,bird,pipes,base,text):
+def drawWindow(window,birds,pipes,base,text):
     window.blit(BackgroundImage,(0,0))
 
     for pipe in pipes:
@@ -131,9 +131,9 @@ def drawWindow(window,bird,pipes,base,text):
     window.blit(text,(10,10))
     base.draw(window)
     
-    bird.draw(window)
-    # for bird in birds:
-    #     bird.draw(window)
+    # bird.draw(window)
+    for bird in birds:
+        bird.draw(window)
     pygame.display.update()
 
 
@@ -164,7 +164,8 @@ def birdLearning():
         iterate = True
         
         epsilon = 1
-        bird = Bird.Bird()
+        numberOfBirds = 100
+        birds = [Bird.Bird() for bird in range(numberOfBirds)]
         
         updateTable = False
         reward = 0
@@ -180,7 +181,8 @@ def birdLearning():
                     if event.key == pygame.K_ESCAPE :
                         run = False
                     elif event.key == pygame.K_SPACE :
-                        bird.jump()
+                        pass
+                        # bird.jump()
                         # for bird in birds:
                         #     bird.jumpKey()
                 elif event.type == pygame.QUIT:
@@ -190,12 +192,14 @@ def birdLearning():
                     quit()
             
             #game stuff
-            drawWindow(window,bird,gameObjects,base,[currentIteration,highScore,gameScore])
+            drawWindow(window,birds,gameObjects,base,[currentIteration,highScore,gameScore])
             for obj in gameObjects:
                 obj.move()
 
             base.move()
 
+            #begin Bird loop
+            #TODO: for bird in birds:
             if nextObject.collide(bird):
                 print("Pipe collision")
                 bird.died = True
@@ -217,9 +221,6 @@ def birdLearning():
             #get the current state and find the suggested action to take
             deltaX = int (nextObject.posX - bird.positionX)
             deltaY = int (nextObject.centerOfGap - bird.positionY) + 250
-            if deltaY < 0 or deltaY > 499:
-                print("TROUBLE WITH Y SPACE")
-                pygame.quit()
             
             if updateTable:
                 brain.updateFromExploration(deltaX,deltaY,reward)

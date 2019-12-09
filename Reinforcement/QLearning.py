@@ -39,6 +39,8 @@ class Learning():
         #vector is the Q value associated with the actions jump and don't jump, respectively
 
         self.QTable = np.ndarray((400,499,2))
+        for x in range(400):
+            self.QTable[x] = 0
         self.learningRate = 0.4
         self.discount = 0.8
 
@@ -48,7 +50,7 @@ class Learning():
     def exploit(self,deltaX,deltaY):
 
         
-        qVector = self.QTable[deltaX,deltaY]
+        qVector = self.QTable[deltaX][deltaY]
 
         if qVector[1] > qVector[0]:
             return 1
@@ -59,18 +61,19 @@ class Learning():
     def explore(self,deltaX,deltaY):
 
         action = self.exploit(deltaX,deltaY)
-        self.updateInfo = (deltaX,deltaY,action)
+        self.updateInfo = [deltaX,deltaY,action]
         
         return action
 
 
     def updateFromExploration(self,deltaX,deltaY,reward):
 
-        nextState = self.QTable[deltaX,deltaY]
-        oldValue = (1-self.learningRate) * self.QTable[self.updateInfo[0],self.updateInfo[1],self.updateInfo[2]]
+        nextState = self.QTable[deltaX][deltaY]
+        oldValue = (1-self.learningRate) * self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]]
         learnedValue = reward + (self.discount * np.max(nextState))
-        self.QTable[self.updateInfo[0],self.updateInfo[1],self.updateInfo[2]] = oldValue + (self.learningRate * learnedValue)
-        
+        self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]] = oldValue + (self.learningRate * learnedValue)
+        #previously comma-separated
+        self.updateInfo = None
         # print(self.updateInfo[2])
         # print(oldValue + (self.learningRate * learnedValue))
         # print(self.QTable[self.updateInfo[0],self.updateInfo[1],self.updateInfo[2]])
@@ -86,3 +89,14 @@ class Learning():
         np.save('./QTable',self.QTable)
 
 
+
+# test = Learning()
+# print(len(test.QTable[0][1])) #2
+# print(len(test.QTable[0])) #499
+# print(len(test.QTable)) #400
+# print(test.QTable[1,1])
+# test.explore(250,250)
+# print(test.updateInfo)
+# test.updateFromExploration(251,251,100)
+# print(test.QTable[250,250])
+# print(test.updateInfo)
