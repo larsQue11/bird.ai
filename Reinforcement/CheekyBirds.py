@@ -165,7 +165,7 @@ def birdLearning():
         
         epsilon = 1
         numberOfBirds = 100
-        birds = [Bird.Bird() for bird in range(numberOfBirds)]
+        birds = [Bird.Bird(100+(i*2)) for i in range(numberOfBirds)]
         
         updateTable = False
         reward = 0
@@ -199,51 +199,59 @@ def birdLearning():
             base.move()
 
             #begin Bird loop
-            #TODO: for bird in birds:
-            if nextObject.collide(bird):
-                print("Pipe collision")
-                bird.died = True
-                iterate = False
-                if bird.positionY == 0:
-                    reward = -1000
+            for bird in birds:
+                if nextObject.collide(bird):
+                    print("Pipe collision")
+                    bird.died = True
+                    iterate = False
+                    if bird.positionY == 0:
+                        bird.reward = -1000
+                    else:
+                        bird.reward = -10
+
+                # check for base collision, bird dies if true
+                elif bird.positionY >= 400:
+                    print("Base collision")
+                    bird.died = True
+                    iterate = False
+                    bird.reward = -10
+
                 else:
-                    reward = -10
+                    bird.reward = 1
 
+                if nextObject.posX < bird.positionX:
+                    gameScore = gameScore + 1
+                    pipesPassed = pipesPassed + 1
+                    nextObject = gameObjects[pipesPassed]
+                    gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
+                    bird.reward = 10
 
-            # check for base collision, bird dies if true
-            elif bird.positionY >= 400:
-                print("Base collision")
-                bird.died = True
-                iterate = False
-                reward = -10
+                #get the current state and find the suggested action to take
+                deltaX = int (nextObject.posX - bird.positionX)
+                deltaY = int (nextObject.centerOfGap - bird.positionY) + 250
+                
+                if updateTable:
+                    brain.updateFromExploration(deltaX,deltaY,reward)
+                    updateTable = False
+                
+                if random.random() < epsilon:
+                    action = brain.explore(deltaX,deltaY)
+                    updateTable = True
+                else:
+                    action = brain.exploit(deltaX,deltaY)
+                
+                if action == 1:
+                    bird.jump()
 
-
-            #get the current state and find the suggested action to take
-            deltaX = int (nextObject.posX - bird.positionX)
-            deltaY = int (nextObject.centerOfGap - bird.positionY) + 250
-            
-            if updateTable:
-                brain.updateFromExploration(deltaX,deltaY,reward)
-                updateTable = False
-            
-            if random.random() < epsilon:
-                action = brain.explore(deltaX,deltaY)
-                updateTable = True
-            else:
-                action = brain.exploit(deltaX,deltaY)
-            
-            if action == 1:
-                bird.jump()
-
-            bird.update()
+                bird.update()
 
                 
-            if nextObject.posX < bird.positionX:
-                gameScore = gameScore + 1
-                pipesPassed = pipesPassed + 1
-                nextObject = gameObjects[pipesPassed]
-                gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
-                reward = 10
+            # if nextObject.posX < bird.positionX:
+            #     gameScore = gameScore + 1
+            #     pipesPassed = pipesPassed + 1
+            #     nextObject = gameObjects[pipesPassed]
+            #     gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
+            #     reward = 10
             
 
         #End current iteration, exit loop and return to outer loop

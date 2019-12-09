@@ -26,7 +26,7 @@ class Pipe:
     Gap = 150
     Velocity = 5
 
-    def __init__(self,x,startHeight):
+    def __init__(self,x,startHeight=None):
         self.posX = x
         self.height = 0
         self.top = 0
@@ -150,7 +150,7 @@ def birdLearning():
     currentIteration = 0
     highScore = 0
     brain = Q.Learning()
-
+    
     while stillLearning:
 
         #Following represents a single generation of evolution
@@ -196,22 +196,32 @@ def birdLearning():
 
             base.move()
 
+            # check for pipe collision
             if nextObject.collide(bird):
                 print("Pipe collision")
                 bird.died = True
                 iterate = False
                 if bird.positionY == 0:
-                    reward = -1000
+                    reward = -10000
                 else:
-                    reward = -10
-
+                    reward = -1000
 
             # check for base collision, bird dies if true
             elif bird.positionY >= 400:
                 print("Base collision")
                 bird.died = True
                 iterate = False
-                reward = -10
+                reward = -100
+
+            else:
+                reward = 10
+
+            if nextObject.posX < bird.positionX:
+                gameScore = gameScore + 1
+                pipesPassed = pipesPassed + 1
+                nextObject = gameObjects[pipesPassed]
+                gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
+                # reward = 100
 
 
             #get the current state and find the suggested action to take
@@ -237,12 +247,12 @@ def birdLearning():
             bird.update()
 
                 
-            if nextObject.posX < bird.positionX:
-                gameScore = gameScore + 1
-                pipesPassed = pipesPassed + 1
-                nextObject = gameObjects[pipesPassed]
-                gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
-                reward = 10
+            # if nextObject.posX < bird.positionX:
+            #     gameScore = gameScore + 1
+            #     pipesPassed = pipesPassed + 1
+            #     nextObject = gameObjects[pipesPassed]
+            #     gameObjects.append(generatePipe(gameObjects[len(gameObjects)-1].posX))
+            #     reward = 1000
             
 
         #End current iteration, exit loop and return to outer loop

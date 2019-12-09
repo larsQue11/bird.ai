@@ -41,42 +41,57 @@ class Learning():
         self.QTable = np.ndarray((400,499,2))
         for x in range(400):
             self.QTable[x] = 0
-        self.learningRate = 0.4
-        self.discount = 0.8
+        self.learningRate = 0.4 #0.4
+        self.discount = 0.95 #0.8
 
         self.updateInfo = None
 
 
     def exploit(self,deltaX,deltaY):
 
-        
+        print("Exploit")
         qVector = self.QTable[deltaX][deltaY]
 
         if qVector[1] > qVector[0]:
+            # print("JUMP!")
             return 1
         else:
             return 0
 
     #use state after action made?
     def explore(self,deltaX,deltaY):
-
+        print("Explore")
         action = self.exploit(deltaX,deltaY)
+        # action = np.random.randint(2)
+        # action = 0
         self.updateInfo = [deltaX,deltaY,action]
         
         return action
 
 
     def updateFromExploration(self,deltaX,deltaY,reward):
+        
+        oldX = self.updateInfo[0]
+        oldY = self.updateInfo[1]
+        actionTaken = self.updateInfo[2]
 
-        nextState = self.QTable[deltaX][deltaY]
-        oldValue = (1-self.learningRate) * self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]]
+        nextState = self.QTable[deltaX][deltaY] #the current state, the result of action taken in previous step
+        oldValue = (1-self.learningRate) * self.QTable[oldX][oldY][actionTaken] #Q value associated with action taken
         learnedValue = reward + (self.discount * np.max(nextState))
-        self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]] = oldValue + (self.learningRate * learnedValue)
+        # print(f"Location: {self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]]}")
+        # self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]] = oldValue + (self.learningRate * learnedValue)
+        newQ = oldValue + (self.learningRate * learnedValue)
+        self.QTable.itemset((oldX,oldY,actionTaken),newQ)
+        # print(f"Q' = {newQ}")
+        # print(f"New Q vector: {self.QTable[oldX][oldY]}")
+
+        # print(f"Value: {self.QTable[self.updateInfo[0]][self.updateInfo[1]][self.updateInfo[2]]}")
+
         #previously comma-separated
         self.updateInfo = None
         # print(self.updateInfo[2])
         # print(oldValue + (self.learningRate * learnedValue))
-        # print(self.QTable[self.updateInfo[0],self.updateInfo[1],self.updateInfo[2]])
+        
 
 
     def loadState(self):
