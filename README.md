@@ -1,11 +1,12 @@
 Instructions for use:
 
 Add Numpy and Pygame modules to your Python3
-Run the CheekyBird.py file
+Run the CheekyBird.py file in each folder to begin the respective learning environment
 
 Library files:
 * NeuralNetwork.py: a 3-layer artificial neural network
 * GeneticAlgorithm.py: the genetic algorithm
+* QLearning.py: the Q Table
 * Bird.py: the agent
 
 To adjust the ANN architecture, go to the Bird.py file and find the "birdBrain" attribute defined 
